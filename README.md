@@ -1,0 +1,1 @@
+A project that uses GSS data https://www.icpsr.umich.edu/web/ICPSR/studies/34802/versions/V1 to investigate the difference in high income proportion among people with different highest level of education
