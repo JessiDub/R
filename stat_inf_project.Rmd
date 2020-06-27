@@ -1,0 +1,138 @@
+---
+title: "Statistical inference with the GSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `gss`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("gss.Rdata")
+
+```
+
+* * *
+
+## Part 1: Data
+
+According to the GSS website, data was collected from random sampling of all noninstitutionalized, English and Spanish speaking persons 18 years of age or older, living in the United States. Interview was conducted through computer (CAPI),face-to-face, or telephone.
+
+Analysis based on the current data set should be fairly generalizable to the English-speaking and Spanish-speaking non-institutionalized individuals. It is possible that the analysis might contain bias as the data set does not include information of non-English-speaking, non-Spanish-speaking population, which constitute significant part of the US population. It also misses data from a considerable amount of expat (US citizens working abroad) that do not reside in US at the time when interviews were conducted.
+
+Any conclusion derived from the current data set does not imply causality, only correlational. It was not a controlled experiment.
+* * *
+
+## Part 2: Research question
+
+Research question:
+What is high income proportion among people with different degrees? In other words, for people without a highschool degree, with a highschool degree, with a junior college, a bachelor degree and graudate school degree, will there be a difference in the proportion of high income population among these different groups?
+
+The question is of interest as it will show us whether education could be an indicator of income and a divider for social equity.
+
+variables of interest: degree, income06 (*high income is define as >$75000 annual family income)
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+
+3 pts for summary statistics  
+Summary statistics should address the research questions (1 pt)  
+Summary statistics should be calculated correctly (1 pt)  
+Summary statistics should be formatted well – not taking up pages and pages, etc. (1 pt)  
+
+Create a subset for analysis, to address the research question:
+```{r}
+q1 <- gss%>%
+  filter(!is.na(income06)) %>%
+  filter(!(income06 == "Refused")) %>%
+  filter(!is.na(degree)) %>%
+  select(caseid, degree, income06)
+
+q1 <- q1 %>%
+  mutate(high_income = ifelse(income06 == "$75000 To $89999" | income06 == "$90000 To $109999" |income06 == "$110000 To $129999" | income06 == "$130000 To $149999" | income06 == "$150000 Or Over", "yes", "no"))
+
+```
+Data summary:  
+1. Counts of individuals in different degree categories
+```{r}
+summary(q1$degree)
+
+
+```
+
+2. Percentage of the population at each income level
+```{r}
+table2 <- table(q1$income06)
+prop.table(table2)
+
+```
+
+3. If we define high income as >= $75000, percentage of high-income and non-high-income popualtion:
+```{r}
+
+table3 <- table(q1$high_income)
+prop.table(table3)
+```
+
+
+3 pts for plots  
+Plots should address the research questions (1 pt)  
+Plots should be constructed correctly (1 pt)  
+Plots should be formatted well – size not too large, not too small, etc. (1 pt)  
+
+The following bar plot shows the percentage of different income levels of d
+
+```{r}
+ggplot(q1, aes(fill=income06, y = 1, x=degree)) + 
+    geom_bar(position = position_fill(reverse = TRUE), stat="identity", width = 0.9) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5))
+```
+
+According to a study by PNAS, emotional well-being rises with log income and continues until an annual income of $75,000, beyond which the effect dims off. (Kahneman, D., & Deaton, A. (2010). High income improves evaluation of life but not emotional well-being. Proceedings of the national academy of sciences, 107(38), 16489-16493.)
+
+Hence, if we define high-income as family annual income >= $75000, the following bar plot shows a percentage of high-income family of each degree category.
+
+```{r}
+ggplot(q1, aes(fill=high_income, y = 1, x=degree)) + 
+    geom_bar(position = position_fill(reverse = TRUE), stat="identity", width = 0.9) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = .5))
+```
+
+
+4 pts for narrative  
+Each plot and/or R output should be accompanied by a narrative (1 pt)  
+Narrative should interpret the visuals / R output correctly (1 pts)  
+Narrative should address the research question (2 pts)  
+
+* * *
+
+## Part 4: Inference
+
+```{r}
+inference(y=high_income, x=degree, data = q1, statistic = "proportion", type = "ht", null = 0, alternative = "greater", method = "theoretical", success = "atheist")
+```
+
+According to the above hypothesis test, we can almost be certain that degree and high_income are dependent. 
+
+
+
+
+
+
+
